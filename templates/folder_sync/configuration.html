@@ -45,15 +45,76 @@
             <div class="space-y-4">
                 {% for config in configs %}
                     <div class="border rounded-lg p-4">
-                        <h3 class="font-medium">{{ config.name }}</h3>
-                        <p class="text-sm text-gray-600">Main Folder: {{ config.main_folder }}</p>
-                        <div class="text-sm text-gray-600 mt-2">
-                            <p>Target Folders:</p>
-                            <ul class="list-disc ml-6">
-                                {% for target in config.target_folders.all %}
-                                    <li>{{ target.path }}</li>
-                                {% endfor %}
-                            </ul>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium">{{ config.name }}</h3>
+                                <div class="text-sm text-gray-600" id="view-mode-{{ config.id }}">
+                                    <p>Main Folder: {{ config.main_folder }}</p>
+                                    <div class="mt-2">
+                                        <p>Target Folders:</p>
+                                        <ul class="list-disc ml-6">
+                                            {% for target in config.target_folders.all %}
+                                                <li>{{ target.path }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <!-- Edit Form (Initially Hidden) -->
+                                <div class="hidden w-full" id="edit-mode-{{ config.id }}">
+                                    <form method="post" class="space-y-3 w-full">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="edit">
+                                        <input type="hidden" name="config_id" value="{{ config.id }}">
+                                        
+                                        <div class="w-full">
+                                            <label class="block text-sm font-medium text-gray-700">Configuration Name</label>
+                                            <input type="text" name="name" value="{{ config.name }}" 
+                                                class="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                        
+                                        <div class="w-full">
+                                            <label class="block text-sm font-medium text-gray-700">Main Folder</label>
+                                            <input type="text" name="main_folder" value="{{ config.main_folder }}"
+                                                class="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                        
+                                        <div class="w-full">
+                                            <label class="block text-sm font-medium text-gray-700">Target Folders</label>
+                                            <div id="edit-target-folders-{{ config.id }}" class="space-y-2 w-full">
+                                                {% for target in config.target_folders.all %}
+                                                    <input type="text" name="target_folders" value="{{ target.path }}"
+                                                        class="mt-1 w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                {% endfor %}
+                                            </div>
+                                            <button type="button" onclick="addEditTargetFolder('{{ config.id }}')" 
+                                                class="mt-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-800">
+                                                + Add Another Target Folder
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="flex space-x-2">
+                                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                                Save Changes
+                                            </button>
+                                            <button type="button" onclick="toggleEditMode('{{ config.id }}', false)"
+                                                class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <button onclick="toggleEditMode('{{ config.id }}', true)"
+                                    class="text-blue-600 hover:text-blue-800">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="mt-4">
@@ -90,6 +151,28 @@ function addTargetFolder() {
     input.name = 'target_folders';
     input.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm';
     container.appendChild(input);
+}
+
+function addEditTargetFolder(configId) {
+    const container = document.getElementById(`edit-target-folders-${configId}`);
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'target_folders';
+    input.className = 'mt-1 w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+    container.appendChild(input);
+}
+
+function toggleEditMode(configId, show) {
+    const viewMode = document.getElementById(`view-mode-${configId}`);
+    const editMode = document.getElementById(`edit-mode-${configId}`);
+    
+    if (show) {
+        viewMode.classList.add('hidden');
+        editMode.classList.remove('hidden');
+    } else {
+        viewMode.classList.remove('hidden');
+        editMode.classList.add('hidden');
+    }
 }
 </script>
 {% endblock %}

@@ -1,6 +1,6 @@
 # folder_sync/views.py
 from django.shortcuts import render, redirect
-from django.views.generic import View
+from django.views.generic import View, TemplateView
 from django.contrib import messages
 from .models import SyncConfiguration, TargetFolder
 from .sync_engine import FolderSyncEngine
@@ -11,12 +11,14 @@ logger = logging.getLogger(__name__)
 
 sync_engine = FolderSyncEngine()
 
-class SyncConfigurationView(View):
+class SyncConfigurationView(TemplateView):
     template_name = 'folder_sync/configuration.html'
+    sync_engine = FolderSyncEngine()
 
-    def get(self, request):
-        configs = SyncConfiguration.objects.all()
-        return render(request, self.template_name, {'configs': configs})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['configs'] = SyncConfiguration.objects.all().prefetch_related('target_folders')
+        return context
 
     def validate_folder_path(self, path):
         if not os.path.exists(path):
@@ -25,7 +27,7 @@ class SyncConfigurationView(View):
             raise ValueError(f"Path is not a directory: {path}")
         return os.path.abspath(path)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         action = request.POST.get('action')
         logger.info(f"Received POST request with action: {action}")
         
@@ -67,6 +69,30 @@ class SyncConfigurationView(View):
             except Exception as e:
                 logger.exception("Unexpected error during configuration creation")
                 messages.error(request, f'Error creating configuration: {str(e)}')
+
+        elif action == 'edit':
+            config_id = request.POST.get('config_id')
+            config = SyncConfiguration.objects.get(id=config_id)
+            
+            if config.is_active:
+                messages.error(request, "Cannot edit an active configuration. Please stop sync first.")
+                return redirect('sync_configuration')
+            
+            config.name = request.POST.get('name')
+            config.main_folder = request.POST.get('main_folder')
+            config.save()
+            
+            # Delete existing target folders
+            config.target_folders.all().delete()
+            
+            # Add new target folders
+            target_folders = request.POST.getlist('target_folders')
+            for folder in target_folders:
+                if folder.strip():
+                    TargetFolder.objects.create(
+                        sync_config=config,
+                        path=folder.strip()
+                    )
 
         elif action == 'start':
             config_id = request.POST.get('config_id')
