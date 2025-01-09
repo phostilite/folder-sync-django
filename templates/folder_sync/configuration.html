@@ -1,0 +1,95 @@
+{% extends './base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Folder Synchronization</h1>
+
+    <!-- Create New Configuration -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Create New Configuration</h2>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Configuration Name</label>
+                <input type="text" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Main Folder</label>
+                <input type="text" name="main_folder" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Target Folders</label>
+                <div id="target-folders" class="space-y-2">
+                    <input type="text" name="target_folders" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+                <button type="button" onclick="addTargetFolder()" class="mt-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-800">
+                    + Add Another Target Folder
+                </button>
+            </div>
+            
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                Create Configuration
+            </button>
+        </form>
+    </div>
+
+    <!-- Existing Configurations -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">Existing Configurations</h2>
+        
+        {% if configs %}
+            <div class="space-y-4">
+                {% for config in configs %}
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-medium">{{ config.name }}</h3>
+                        <p class="text-sm text-gray-600">Main Folder: {{ config.main_folder }}</p>
+                        <div class="text-sm text-gray-600 mt-2">
+                            <p>Target Folders:</p>
+                            <ul class="list-disc ml-6">
+                                {% for target in config.target_folders.all %}
+                                    <li>{{ target.path }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <form method="post" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="config_id" value="{{ config.id }}">
+                                {% if config.is_active %}
+                                    <input type="hidden" name="action" value="stop">
+                                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                                        Stop Sync
+                                    </button>
+                                {% else %}
+                                    <input type="hidden" name="action" value="start">
+                                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                        Start Sync
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">No configurations found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function addTargetFolder() {
+    const container = document.getElementById('target-folders');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'target_folders';
+    input.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm';
+    container.appendChild(input);
+}
+</script>
+{% endblock %}

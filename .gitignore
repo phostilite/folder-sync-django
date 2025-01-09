@@ -1,0 +1,54 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+venv/
+.env/
+env/
+.venv/
+
+# Django
+*.log
+db.sqlite3
+static/
+media/
+local_settings.py
+*.pot
+*.pyc
+.env
+.env.prod
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.bak
+.project
+.settings/
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+folder_sync.log

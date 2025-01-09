@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folder Sync Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="fixed top-0 right-0 m-4 z-50">
+        {% for message in messages %}
+            <div class="{% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %} text-white px-6 py-4 rounded-lg shadow-lg mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'sync_configuration' %}" class="text-xl font-bold text-gray-800">
+                        Folder Sync
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer class="bg-white shadow-lg mt-8">
+        <div class="container mx-auto px-4 py-4">
+            <p class="text-center text-gray-600 text-sm">
+                Folder Sync Application &copy; {% now "Y" %}
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript to auto-hide messages -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('[class*="bg-"][class*="-500"]');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    message.style.transition = 'opacity 0.5s';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>
